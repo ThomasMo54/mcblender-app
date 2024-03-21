@@ -3,3 +3,5 @@ plugins {
 }
 rootProject.name = "mcblender-app"
 
+include("app")
+

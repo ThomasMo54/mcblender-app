@@ -1,58 +1,60 @@
 plugins {
-  id 'java'
-  id 'application'
-  id 'org.jetbrains.kotlin.jvm' version '1.8.22'
-  id 'org.javamodularity.moduleplugin' version '1.8.12'
-  id 'org.openjfx.javafxplugin' version '0.0.13'
-  id 'org.beryx.jlink' version '2.25.0'
+    id("java")
+    kotlin("jvm") version "1.9.22"
+    id("application")
+    id("org.javamodularity.moduleplugin").version("1.8.12")
+    id("org.openjfx.javafxplugin").version("0.0.13")
 }
 
-group 'com.motompro.mcblender'
-version '1.0-SNAPSHOT'
+group = rootProject.group
+version = rootProject.version
 
 repositories {
-  mavenCentral()
-}
-
-ext {
-  junitVersion = '5.10.0'
-}
-
-
-tasks.withType(JavaCompile) {
-  options.encoding = 'UTF-8'
-}
-
-application {
-  mainModule = 'com.motompro.mcblender.app'
-  mainClass = 'com.motompro.mcblender.app.HelloApplication'
-}
-kotlin {
-  jvmToolchain( 17 )
-}
-
-javafx {
-  version = '17.0.6'
-  modules = ['javafx.controls', 'javafx.fxml']
+    mavenCentral()
 }
 
 dependencies {
+    testImplementation(kotlin("test"))
 
-  testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    implementation("org.yaml:snakeyaml:2.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }
 
-test {
-useJUnitPlatform()}
-
-jlink {
-  imageZip = project.file("${buildDir}/distributions/app-${javafx.platform.classifier}.zip")
-  options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-  launcher {
-    name = 'app'
-  }
+application {
+    mainModule = "com.motompro.mcblender.app"
+    mainClass = "com.motompro.mcblender.app.MCBlender"
 }
 
-jlinkZip {
-  group = 'distribution'
+tasks {
+    withType<ProcessResources> {
+        val versionFile = File(rootDir, "version.txt")
+        versionFile.delete()
+        versionFile.createNewFile()
+        versionFile.writeText("${rootProject.version}")
+        from(versionFile)
+    }
+}
+
+tasks.jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+sourceSets {
+    java.sourceSets
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}
+
+javafx {
+    version = "17.0.6"
+    modules = listOf("javafx.controls", "javafx.fxml")
 }
